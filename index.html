@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HomeTrust Zambia Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Concept: a quiet green workbench. Top bar with tabs, a website view, two phones side by side with a money panel, and an admin payout desk. */
+:root {
+  --bg: #edf3ef;
+  --surface: #ffffff;
+  --surface2: #f5f9f6;
+  --fg: #15231d;
+  --muted: #55665e;
+  --line: #d6e1db;
+  --brand: #0d6a55;
+  --brand-fg: #ffffff;
+  --brand-soft: #daeee6;
+  --amber: #8f5c00;
+  --amber-soft: #fbefd0;
+  --red: #b3261e;
+  --red-soft: #fbe2df;
+  --ok: #17753f;
+  --ok-soft: #dbf1e3;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1613; --surface: #16211d; --surface2: #1b2924; --fg: #e5efea; --muted: #94a79e;
+    --line: #2a3b34; --brand: #45b898; --brand-fg: #052219; --brand-soft: #1a3a30;
+    --amber: #e8b94c; --amber-soft: #3a2f12; --red: #ff8f86; --red-soft: #3e201d;
+    --ok: #62d392; --ok-soft: #173a29; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1613; --surface: #16211d; --surface2: #1b2924; --fg: #e5efea; --muted: #94a79e;
+  --line: #2a3b34; --brand: #45b898; --brand-fg: #052219; --brand-soft: #1a3a30;
+  --amber: #e8b94c; --amber-soft: #3a2f12; --red: #ff8f86; --red-soft: #3e201d;
+  --ok: #62d392; --ok-soft: #173a29; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.12; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.wrap { max-width: 1140px; margin: 0 auto; }
+
+/* top bar */
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 14px 0; }
+.logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 800; font-size: 20px; }
+.logo-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--brand); display: grid; place-items: center; }
+.logo-mark svg { width: 18px; height: 18px; }
+.tag { font-size: 12px; color: var(--muted); }
+.tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px; margin-left: auto; }
+.tabs button { border: 0; background: transparent; padding: 8px 14px; border-radius: 9px; font-weight: 600; color: var(--muted); }
+.tabs button[aria-current="true"] { background: var(--brand); color: var(--brand-fg); }
+.reset { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 12px; font-weight: 600; color: var(--muted); }
+
+/* guide bar */
+.guide { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; background: var(--brand-soft); border-radius: 12px; padding: 12px 16px; margin: 4px 0 20px; }
+.guide b { font-family: var(--font-display); }
+.guide .step { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--brand); }
+
+/* apps layout */
+.apps { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.phone-col { display: flex; flex-direction: column; gap: 10px; align-items: center; width: min(360px, 100%); }
+.phone-label { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.phone { width: 100%; height: 700px; border: 8px solid #1a2420; border-radius: 38px; background: var(--surface); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 18px 40px rgba(0,0,0,.14); }
+.sbar { display: flex; justify-content: space-between; padding: 8px 20px 4px; font-size: 11px; font-weight: 700; color: var(--muted); }
+.appbar { display: flex; align-items: center; gap: 8px; padding: 6px 16px 10px; border-bottom: 1px solid var(--line); }
+.appbar h3 { font-size: 18px; }
+.appbar .sub { font-size: 12px; color: var(--muted); }
+.back { border: 0; background: var(--surface2); width: 30px; height: 30px; border-radius: 9px; font-weight: 700; }
+.scr { flex: 1; overflow-y: auto; padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+.side { flex: 1; min-width: min(300px, 100%); display: flex; flex-direction: column; gap: 16px; }
+
+/* shared parts */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.panel h3 { font-size: 17px; margin-bottom: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; }
+.chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--brand-fg); }
+.btn { border: 0; background: var(--brand); color: var(--brand-fg); border-radius: 12px; padding: 12px 16px; font-weight: 700; width: 100%; }
+.btn.ghost { background: var(--surface2); color: var(--fg); border: 1px solid var(--line); }
+.btn.danger { background: var(--red); color: #fff; }
+.btn.small { width: auto; padding: 8px 12px; font-size: 13px; border-radius: 10px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 8px; background: var(--brand-soft); color: var(--brand); white-space: nowrap; }
+.pill.amber { background: var(--amber-soft); color: var(--amber); }
+.pill.red { background: var(--red-soft); color: var(--red); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lbl { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; display: block; }
+input[type="text"], input[type="number"], textarea { width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 10px; padding: 10px 12px; font: inherit; }
+textarea { min-height: 64px; resize: vertical; }
+.card { border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); }
+.wk { display: flex; gap: 12px; align-items: center; }
+.av { width: 44px; height: 44px; border-radius: 50%; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; flex: none; }
+.wk .nm { font-weight: 700; }
+.kv { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }
+.kv.total { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 8px; font-weight: 800; }
+.note { background: var(--amber-soft); color: var(--amber); border-radius: 10px; padding: 8px 10px; font-size: 13px; font-weight: 600; }
+.note.red { background: var(--red-soft); color: var(--red); }
+.note.ok { background: var(--ok-soft); color: var(--ok); }
+.stars { display: flex; gap: 4px; }
+.stars button { border: 0; background: transparent; font-size: 26px; padding: 0 2px; color: var(--line); }
+.stars button[aria-pressed="true"] { color: #e0a000; }
+.dots span { display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; background: var(--brand); animation: pulse 1.2s infinite ease-in-out; }
+.dots span:nth-child(2) { animation-delay: .2s; } .dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes pulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+.map { border: 1px solid var(--line); border-radius: 14px; background: var(--surface2); }
+.map svg { display: block; width: 100%; height: auto; }
+.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
+.log li { display: flex; gap: 10px; font-size: 13px; }
+.log time { color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+.ledger .kv { font-variant-numeric: tabular-nums; }
+
+/* admin */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.tile .v { font-family: var(--font-display); font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.tile .l { font-size: 13px; color: var(--muted); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: middle; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+td input { width: 140px; padding: 7px 9px; }
+.checks { display: flex; gap: 4px; flex-wrap: wrap; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+
+/* website */
+.hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 32px; align-items: center; padding: 28px 0 40px; }
+.hero h1 { font-size: clamp(34px, 6vw, 58px); font-weight: 800; letter-spacing: -.02em; }
+.hero p.lead { font-size: 18px; color: var(--muted); margin: 16px 0 24px; max-width: 52ch; }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; }
+.cta .btn { width: auto; padding: 14px 20px; }
+.hero-card { background: var(--brand); color: var(--brand-fg); border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+.hero-card .row { background: rgba(255,255,255,.12); border-radius: 14px; padding: 12px 14px; }
+.sec { padding: 34px 0; border-top: 1px solid var(--line); }
+.sec h2 { font-size: clamp(26px, 4vw, 36px); margin-bottom: 8px; }
+.sec .intro { color: var(--muted); max-width: 60ch; margin-bottom: 22px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.grid3 .panel h3 { margin-bottom: 6px; }
+.ctab { width: 100%; border-collapse: collapse; min-width: 0; }
+.footer { padding: 28px 0 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 600; z-index: 20; max-width: calc(100% - 32px); }
+
+.cfg { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+/* admin dashboard */
+.adm { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 20px; align-items: start; }
+.snav { display: flex; flex-direction: column; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 8px; position: sticky; top: 12px; }
+.snav button { display: flex; justify-content: space-between; align-items: center; gap: 8px; border: 0; background: transparent; padding: 9px 12px; border-radius: 9px; text-align: left; font-weight: 600; color: var(--muted); }
+.snav button[aria-current="true"] { background: var(--brand-soft); color: var(--brand); }
+.badge { min-width: 20px; text-align: center; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 1px 7px; background: var(--red); color: #fff; }
+.badge.n { background: var(--surface2); color: var(--muted); }
+.att { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.att li { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bigmap { border: 1px solid var(--line); border-radius: 14px; background: var(--surface2); overflow: hidden; }
+.bigmap svg { display: block; width: 100%; height: auto; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); padding: 8px 12px; }
+.amt-in { color: var(--ok); font-weight: 700; }
+.amt-out { color: var(--red); font-weight: 700; }
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.plan { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--surface); display: flex; flex-direction: column; gap: 8px; }
+.plan.on { border-color: var(--brand); box-shadow: 0 0 0 2px var(--brand-soft); }
+.plan ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+.plan .pr { font-family: var(--font-display); font-weight: 800; font-size: 24px; }
+button.pill { border: 0; cursor: pointer; }
+.mem { margin-left: auto; }
+@media (max-width: 860px) {
+  .adm { grid-template-columns: 1fr; }
+  .snav { flex-direction: row; overflow-x: auto; position: static; }
+  .snav button { white-space: nowrap; }
+}
+@media (max-width: 760px) {
+  .hero { grid-template-columns: 1fr; }
+  .tabs { margin-left: 0; width: 100%; }
+  .tabs button { flex: 1; padding: 8px 6px; }
+  .phone { height: 660px; }
+}
+@media (prefers-reduced-motion: reduce) { .dots span { animation: none; opacity: 1; } }
+</style>
+
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">
+      <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/><path d="M9.5 14.5l2 2 3.5-4"/></svg></span>
+      HomeTrust
+    </div>
+    <span class="tag">Clickable prototype with sample data</span>
+    <nav class="tabs" aria-label="Prototype views">
+      <button data-act="tab" data-v="website" id="t-website">Website</button>
+      <button data-act="tab" data-v="apps" id="t-apps">Mobile apps</button>
+      <button data-act="tab" data-v="admin" id="t-admin">Admin</button>
+    </nav>
+    <button class="reset" data-act="reset">Reset demo</button>
+  </header>
+  <main id="view"></main>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+/* ---------- data ---------- */
+const DEF_RATE = { cleaner: 50, housekeeper: 45, nanny: 65, babysitter: 60, cook: 55 };
+const RATE = { ...DEF_RATE };
+const LABEL = { cleaner: "Cleaner", housekeeper: "Housekeeper", nanny: "Nanny", babysitter: "Babysitter", cook: "Cook" };
+const CARE = ["nanny", "babysitter"];
+const DEF_CFG = { creditPct: 10, packages: [500, 1000, 2000, 5000], minHours: 3, minListed: 150, lowCredit: 300, autoMinutes: 60, plusPrice: 50, premiumPrice: 100, limBasic: 5, limPlus: 10, refundDays: 7, placementFee: 350 };
+const CFG = { ...DEF_CFG, packages: [...DEF_CFG.packages] };
+const resetCfg = () => { Object.assign(RATE, DEF_RATE); Object.assign(CFG, DEF_CFG, { packages: [...DEF_CFG.packages] }); };
+const WORKERS = [
+  { id: "w1", name: "Mwila Chanda", services: ["cleaner", "housekeeper"], area: "Kabulonga", km: 0.8, rating: 4.8, jobs: 126 },
+  { id: "w2", name: "Natasha Banda", services: ["nanny", "babysitter"], area: "Woodlands", km: 1.6, rating: 4.9, jobs: 88 },
+  { id: "w3", name: "Joyce Phiri", services: ["cook", "cleaner"], area: "Olympia", km: 2.3, rating: 4.7, jobs: 64 },
+  { id: "w4", name: "Chileshe Mumba", services: ["cleaner", "housekeeper"], area: "Chilenje", km: 3.4, rating: 4.6, jobs: 41 },
+  { id: "w5", name: "Grace Zulu", services: ["nanny", "cook"], area: "Roma", km: 4.1, rating: 4.8, jobs: 57 },
+  { id: "w6", name: "Bwalya Tembo", services: ["housekeeper", "babysitter"], area: "Chelston", km: 6.2, rating: 4.5, jobs: 23 },
+  { id: "w7", name: "Memory Sichone", services: ["cleaner", "cook"], area: "Rhodes Park", km: 1.2, rating: 4.7, jobs: 52 },
+  { id: "w8", name: "Ireen Mwale", services: ["nanny", "housekeeper"], area: "Woodlands", km: 1.9, rating: 4.6, jobs: 38 },
+  { id: "w9", name: "Beatrice Daka", services: ["cleaner", "babysitter"], area: "Kabulonga", km: 2.8, rating: 4.9, jobs: 91 },
+  { id: "w10", name: "Lillian Njobvu", services: ["cook", "housekeeper"], area: "Olympia", km: 3.0, rating: 4.5, jobs: 29 },
+  { id: "w11", name: "Esther Kunda", services: ["cleaner", "nanny"], area: "Chilenje", km: 3.7, rating: 4.7, jobs: 47 },
+  { id: "w12", name: "Mercy Lungu", services: ["babysitter", "cook"], area: "Roma", km: 4.4, rating: 4.8, jobs: 60 },
+  { id: "w13", name: "Precious Mwape", services: ["cleaner", "housekeeper"], area: "Kalundu", km: 5.0, rating: 4.4, jobs: 19 },
+  { id: "w14", name: "Faith Nkandu", services: ["nanny", "babysitter"], area: "Chelston", km: 5.6, rating: 4.6, jobs: 33 },
+  { id: "w15", name: "Doreen Simbeye", services: ["cleaner", "cook"], area: "Woodlands", km: 6.8, rating: 4.5, jobs: 25 },
+  { id: "w16", name: "Aggie Sakala", services: ["housekeeper", "nanny"], area: "Rhodes Park", km: 7.4, rating: 4.3, jobs: 12 }
+];
+const WPHONE = Object.fromEntries(WORKERS.map((w, i) => [w.id, "09" + [65, 76, 55, 66, 77, 61][i % 6] + " xxx " + String(200 + i * 53)]));
+const WHEN = { now: "Now (about 15 minutes)", today: "Today 16:00", tomorrow: "Tomorrow 09:00" };
+const CHECKS = ["Identity + photo", "References", "Police", "Medical", "Skills", "Interview"];
+const AREAS = { Kabulonga: [430, 120], Woodlands: [330, 170], Olympia: [250, 110], Chilenje: [320, 250], Roma: [470, 60], "Rhodes Park": [360, 70], Kalundu: [200, 200], Chelston: [560, 200] };
+const DEMO_CLIENT = { name: "Mutale Kunda", phone: "0971 xxx 214", area: "Kabulonga" };
+const CUSTOMERS = [
+  { name: "Ruth Mwansa", phone: "0966 xxx 118", area: "Rhodes Park", tier: "plus", jobs: 14 },
+  { name: "Agnes Lungu", phone: "0955 xxx 076", area: "Chilenje", tier: "premium", jobs: 22 },
+  { name: "David Mbewe", phone: "0962 xxx 915", area: "Roma", tier: "plus", jobs: 9 },
+  { name: "Peter Sakala", phone: "0977 xxx 402", area: "Kalundu", tier: "basic", jobs: 3 },
+  { name: "Thandiwe Zimba", phone: "0971 xxx 330", area: "Woodlands", tier: "basic", jobs: 6 }
+];
+const LIMIT = { get basic() { return CFG.limBasic; }, get plus() { return CFG.limPlus; }, premium: Infinity };
+const PLANS = {
+  basic: { name: "Basic", price: 0, get perks() { return ["Standard bookings", "Standard support", "Nearest " + CFG.limBasic + " available workers shown"]; } },
+  plus: { name: "Plus", get price() { return CFG.plusPrice; }, get perks() { return ["Everything in Basic", "Nearest " + CFG.limPlus + " available workers shown", "Priority support", "Recurring-booking management"]; } },
+  premium: { name: "Premium", get price() { return CFG.premiumPrice; }, perks: ["Everything in Plus", "All available workers shown", "Enhanced booking assistance", "Family-service coordination"] }
+};
+const sampleJobs = () => [
+  { id: "J-1041", wid: "w2", worker: "Natasha Banda", client: "Thandiwe Zimba", service: "nanny", hours: 4, price: 260, status: "counted" },
+  { id: "J-1042", wid: "w2", worker: "Natasha Banda", client: "Ruth Mwansa", service: "babysitter", hours: 3, price: 180, status: "counted" },
+  { id: "J-1043", wid: "w3", worker: "Joyce Phiri", client: "David Mbewe", service: "cook", hours: 3, price: 165, status: "counted" },
+  { id: "J-1044", wid: "w4", worker: "Chileshe Mumba", client: "Agnes Lungu", service: "cleaner", hours: 3, price: 150, status: "counted" }
+];
+const samplePlacements = () => [
+  { id: "P-501", client: "Agnes Lungu", role: "nanny", arrangement: "Live-in", start: "Within 2 weeks", status: "hired", picked: "w5", feePaid: true },
+  { id: "P-502", client: "Peter Sakala", role: "housekeeper", arrangement: "Live-out", start: "Next month", status: "requested" }
+];
+const sampleActive = () => [
+  { id: "B-2048", wid: "w3", client: "Ruth Mwansa", cphone: "0966 xxx 118", service: "cook", status: "inprogress", area: "Rhodes Park", note: "Checked in 13:10", hours: 3, price: 165, c: [360, 70], w: [360, 70] },
+  { id: "B-2049", wid: "w5", client: "Peter Sakala", cphone: "0977 xxx 402", service: "nanny", status: "enroute", area: "Kalundu", note: "6 min away", hours: 4, price: 260, c: [200, 200], w: [290, 150] },
+  { id: "B-2050", wid: "w6", client: "Thandiwe Zimba", cphone: "0971 xxx 330", service: "housekeeper", status: "awaiting", area: "Woodlands", note: "Waiting for the worker", hours: 3, price: 135, c: [330, 170], w: [560, 200] }
+];
+const sampleComplaints = () => [
+  { id: "C-301", job: "J-1044", client: "Agnes Lungu", worker: "Chileshe Mumba", type: "Complaint", text: "Arrived 40 minutes late and left early.", status: "open" }
+];
+const sampleFloat = () => ({ w1: 1000, w2: 400, w3: 1500, w4: 0, w5: 600, w6: 350, w7: 800, w8: 450, w9: 1200, w10: 250, w11: 700, w12: 900, w13: 550, w14: 400, w15: 1100, w16: 300 });
+const sampleTx = () => {
+  const rows = [
+    ["08:10", "TOP-6901", "Credit top-up", "Natasha Banda", 100, "K1,000 of job credit"],
+    ["08:40", "TOP-6902", "Credit top-up", "Joyce Phiri", 200, "K2,000 of job credit"],
+    ["09:00", "TOP-6903", "Credit top-up", "Mwila Chanda", 100, "K1,000 of job credit"],
+    ["09:20", "TOP-6904", "Credit top-up", "Chileshe Mumba", 50, "K500 of job credit"],
+    ["08:30", "MEM-0412", "Membership", "Ruth Mwansa (Plus)", 50, "Active"],
+    ["08:55", "MEM-0413", "Membership", "Agnes Lungu (Premium)", 100, "Active"],
+    ["09:40", "MEM-0414", "Membership", "David Mbewe (Plus)", 50, "Active"],
+    ["10:30", "P-501", "Placement fee", "Agnes Lungu", 350, "Received, non-refundable"],
+    ["13:05", "J-1041", "Credit used", "Natasha Banda", 260, "Deducted from job credit"],
+    ["13:20", "J-1042", "Credit used", "Natasha Banda", 180, "Deducted from job credit"],
+    ["13:30", "J-1043", "Credit used", "Joyce Phiri", 165, "Deducted from job credit"],
+    ["13:45", "J-1044", "Credit used", "Chileshe Mumba", 150, "Deducted from job credit"]
+  ];
+  return rows.sort((a, b) => (a[0] < b[0] ? 1 : -1)).map(([t, ref, type, party, amt, status]) => ({ t, ref, type, party, amt, status }));
+};
+
+/* ---------- state ---------- */
+let state, timer = null, clock = 0, toastTimer = null;
+const fresh = () => (resetCfg(), {
+  tab: "website", service: "cleaner",
+  cust: { screen: "home", wid: null, when: "now", hours: 3, address: "Plot 24, Kabulonga, Lusaka", notes: "", special: false, specialText: "", ft: { role: "housekeeper", arr: "Live-out", start: "Within 2 weeks", notes: "" }, agree: false },
+  booking: null, track: null, log: [], jobs: sampleJobs(), photoPending: true, photoDone: null,
+  member: "basic", admin: "overview", txf: "all", active: sampleActive(), complaints: sampleComplaints(), tx: sampleTx(),
+  placement: null, placements: samplePlacements(), ftFee: true, float: sampleFloat(), wtop: { open: false, amt: 1000 }
+});
+const worker = (id) => WORKERS.find((w) => w.id === id);
+const r2 = (n) => Math.round(n * 100) / 100;
+const K = (n) => "K" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const K0 = (n) => "K" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pad = (n) => String(n).padStart(2, "0");
+const stamp = () => { clock += 2; return pad(14 + Math.floor(clock / 60)) + ":" + pad(clock % 60); };
+const say = (t) => state.log.unshift({ t: stamp(), m: t });
+const txAdd = (ref, type, party, amt, status) => state.tx.unshift({ t: stamp(), ref, type, party, amt, status });
+const money = (rate, hours) => ({ price: rate * hours });
+const topupPrice = (credit) => r2(credit * CFG.creditPct / 100);
+const hoursOpts = () => Array.from({ length: Math.max(1, 9 - CFG.minHours) }, (_, i) => CFG.minHours + i);
+const initials = (n) => n.split(" ").map((p) => p[0]).join("");
+const $ = (s) => document.querySelector(s);
+const busyIds = () => {
+  const s = new Set(state.active.map((j) => j.wid));
+  if (state.booking && !["declined", "done"].includes(state.booking.status)) s.add(state.booking.wid);
+  state.placements.filter((p) => p.status === "hired").forEach((p) => s.add(p.picked));
+  if (state.placement && state.placement.status === "hired") s.add(state.placement.picked);
+  return s;
+};
+const isAvailable = (w) => !busyIds().has(w.id) && state.float[w.id] >= CFG.minListed;
+const personaW = () => {
+  const b = state.booking, p = state.placement;
+  if (b) return worker(b.wid);
+  if (p && p.picked && ["offered", "accepted", "hired"].includes(p.status)) return worker(p.picked);
+  return WORKERS[0];
+};
+
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2800);
+}
+
+/* ---------- actions ---------- */
+function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
+function startTrip() {
+  const b = state.booking, w = worker(b.wid);
+  state.track = { d: w.km, d0: w.km };
+  b.status = "enroute"; say(w.name + " accepted and is on the way.");
+  stopTimer();
+  timer = setInterval(() => {
+    const t = state.track; t.d = Math.max(0, t.d - t.d0 / 14);
+    if (t.d <= 0.02) { t.d = 0; b.status = "arrived"; stopTimer(); say(w.name + " has arrived."); }
+    render();
+  }, 700);
+}
+function finishJob(auto) {
+  const b = state.booking, w = worker(b.wid);
+  state.float[b.wid] = r2(state.float[b.wid] - b.price);
+  b.status = "done";
+  state.jobs.push({ id: "J-1045", wid: b.wid, worker: w.name, client: DEMO_CLIENT.name, service: b.service, hours: b.hours, price: b.price, status: "counted" });
+  say(auto ? "No check-out was received, so the job was counted automatically " + CFG.autoMinutes + " minutes after the booked end time." : w.name + " checked out. The job is counted.");
+  txAdd("J-1045", "Credit used", w.name, b.price, "Deducted from job credit");
+  say("HomeTrust deducted " + K(b.price) + " from " + w.name + "'s job credit. Balance " + K(state.float[b.wid]) + ".");
+  if (state.float[b.wid] < CFG.minListed) say(w.name + " is below the minimum credit and is hidden from customers until they top up.");
+}
+function act(a, v) {
+  const c = state.cust, b = state.booking;
+  switch (a) {
+    case "tab": state.tab = v; break;
+    case "reset": stopTimer(); clock = 0; state = fresh(); state.tab = "apps"; break;
+    case "svc": state.service = v; break;
+    case "pick": c.wid = v; c.screen = "book"; c.special = false; c.specialText = ""; c.hours = Math.max(c.hours, CFG.minHours); break;
+    case "back": c.screen = c.screen === "fthire" ? "ftstatus" : b && b.status !== "declined" && c.screen === "member" ? "status" : "home"; break;
+    case "when": c.when = v; break;
+    case "hours": c.hours = Number(v); break;
+    case "special": c.special = !c.special; break;
+    case "send": {
+      const w = worker(c.wid), rate = RATE[state.service], m = money(rate, c.hours);
+      state.booking = { wid: c.wid, service: state.service, hours: c.hours, rate, ...m, when: c.when, address: c.address, notes: c.notes, special: c.special, specialText: c.specialText, status: "awaiting", complaint: false, rating: 5 };
+      c.screen = "status";
+      say("Customer requested " + w.name + " for " + c.hours + " hours. Final charge " + K(m.price) + ", paid to the worker directly.");
+      break;
+    }
+    case "cancel": say("Customer cancelled before the worker accepted."); state.booking = null; c.screen = "home"; break;
+    case "decline": say(worker(b.wid).name + " declined the request."); b.status = "declined"; break;
+    case "accept":
+      if (state.float[b.wid] < b.price) { toast("Top up your job credit to accept this job."); return; }
+      startTrip(); return render();
+    case "checkin": b.status = "inprogress"; say("Checked in. The app confirmed the worker is within 120 m of the address."); break;
+    case "checkinfar": toast("Too far: you are 2.4 km from the address. Move closer to check in."); return;
+    case "checkout": finishJob(false); break;
+    case "autoc": finishJob(true); break;
+    case "sos": case "problem": {
+      if (!b.complaint) {
+        const sos = a === "sos";
+        state.complaints.unshift({ id: "C-" + (302 + state.complaints.length), job: "J-1045", client: DEMO_CLIENT.name, worker: worker(b.wid).name, type: sos ? "SOS" : "Complaint", text: sos ? "SOS pressed during the visit." : "Problem reported during the visit.", status: "open" });
+      }
+      b.complaint = true;
+      say(a === "sos" ? "SOS sent to the HomeTrust desk." : "Complaint raised with HomeTrust.");
+      break;
+    }
+    case "star": b.rating = Number(v); break;
+    case "again": state.booking = null; c.screen = "home"; break;
+    case "resolve":
+      state.complaints.filter((x) => x.job === v).forEach((x) => { x.status = "resolved"; });
+      if (b && v === "J-1045") b.complaint = false;
+      say("Complaint on " + v + " resolved."); break;
+    case "reverse": {
+      const j = state.jobs.find((x) => x.id === v); if (!j || j.status === "reversed") break;
+      j.status = "reversed"; state.float[j.wid] = r2(state.float[j.wid] + j.price);
+      txAdd(v, "Reversal", j.worker, j.price, "Returned to job credit");
+      say(K(j.price) + " of job credit returned to " + j.worker + " for " + v + ".");
+      break;
+    }
+    case "adm": state.admin = v; break;
+    case "gofloat": state.tab = "admin"; state.admin = "float"; break;
+    case "txf": state.txf = v; break;
+    case "photo": state.photoPending = false; state.photoDone = v; toast(v === "ok" ? "New photo approved." : "Photo change rejected. The old photo stays."); break;
+    case "cta": toast("Prototype only. The Google Play link goes live at launch."); return;
+    case "memscr": c.screen = "member"; break;
+    case "join": {
+      if (v === "basic") {
+        if (state.member !== "basic") {
+          const p = PLANS[state.member];
+          txAdd("MEM-0415R", "Membership refund", DEMO_CLIENT.name + " (" + p.name + ")", p.price, "Refunded within " + CFG.refundDays + " days");
+          say("Membership cancelled within " + CFG.refundDays + " days. " + K(p.price) + " refunded.");
+          toast("Membership cancelled and refunded. Simulated.");
+        }
+        state.member = "basic"; break;
+      }
+      const p = PLANS[v]; state.member = v;
+      say("Customer joined " + p.name + " (" + K(p.price) + " per month).");
+      txAdd("MEM-0415", "Membership", DEMO_CLIENT.name + " (" + p.name + ")", p.price, "Active");
+      toast("Welcome to " + p.name + ". Simulated payment, no money moved.");
+      break;
+    }
+    case "wtop": state.wtop.open = true; state.wtop.amt = CFG.packages[1] || CFG.packages[0]; break;
+    case "wtopback": state.wtop.open = false; break;
+    case "wamt": state.wtop.amt = Number(v); break;
+    case "wpay": {
+      const w = personaW(), credit = state.wtop.amt, paid = topupPrice(credit);
+      state.float[w.id] = r2(state.float[w.id] + credit); state.wtop.open = false;
+      txAdd("TOP-" + (6905 + state.tx.length), "Credit top-up", w.name, paid, K0(credit) + " of job credit");
+      say(w.name + " paid " + K(paid) + " for " + K0(credit) + " of job credit. Balance " + K(state.float[w.id]) + ".");
+      toast("Job credit added. Simulated payment.");
+      break;
+    }
+    case "ft": c.screen = state.placement ? "ftstatus" : "fulltime"; break;
+    case "ftrole": c.ft.role = v; break;
+    case "ftarr": c.ft.arr = v; break;
+    case "ftstart": c.ft.start = v; break;
+    case "ftsend":
+      state.placement = { id: "P-503", client: DEMO_CLIENT.name, role: c.ft.role, arrangement: c.ft.arr, start: c.ft.start, notes: c.ft.notes, status: "requested" };
+      c.screen = "ftstatus"; say("Customer asked for a full-time " + LABEL[c.ft.role].toLowerCase() + " (" + c.ft.arr + ")."); break;
+    case "ftshort": {
+      const p = (v && state.placements.find((x) => x.id === v)) || state.placement;
+      if (p && p.status === "requested") { p.status = "shortlist"; say("HomeTrust sent a shortlist for " + p.id + "."); }
+      break;
+    }
+    case "ftpick": state.placement.picked = v; state.placement.status = "offered"; say("Employer offered the full-time job to " + worker(v).name + "."); break;
+    case "ftwaccept": { const p = state.placement; p.status = "accepted"; say(worker(p.picked).name + " accepted the full-time offer."); break; }
+    case "ftwdecline": { const p = state.placement; say(worker(p.picked).name + " declined the full-time offer."); p.picked = null; p.status = "shortlist"; break; }
+    case "ftreview": c.screen = "fthire"; c.agree = false; break;
+    case "ftagree": c.agree = !c.agree; break;
+    case "ftconfirm": {
+      const p = state.placement; p.status = "hired"; p.feePaid = state.ftFee; c.screen = "ftstatus";
+      say("Hire confirmed: " + worker(p.picked).name + ". No job credit is used for full-time workers.");
+      if (state.ftFee) txAdd(p.id, "Placement fee", DEMO_CLIENT.name, CFG.placementFee, "Received, non-refundable");
+      break;
+    }
+    case "ftagain": state.placement = null; c.screen = "home"; break;
+    case "ftfee": state.ftFee = !state.ftFee; toast(state.ftFee ? "Placement fee collection is on." : "Placement fee collection is off."); break;
+  }
+  render();
+}
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-act]"); if (t && !t.disabled) act(t.dataset.act, t.dataset.v);
+});
+document.addEventListener("input", (e) => {
+  const id = e.target.id, c = state.cust;
+  if (id === "addr") c.address = e.target.value;
+  if (id === "notes") c.notes = e.target.value;
+  if (id === "sptext") c.specialText = e.target.value;
+  if (id === "ftnotes") c.ft.notes = e.target.value;
+});
+document.addEventListener("change", (e) => {
+  const id = e.target.id; if (!id || !id.startsWith("cfg-")) return;
+  const n = Number(e.target.value);
+  if (!Number.isFinite(n) || n < 0) { toast("Enter a number."); render(); return; }
+  if (id.startsWith("cfg-rate-")) RATE[id.slice(9)] = n;
+  else if (id.startsWith("cfg-pk-")) CFG.packages[Number(id.slice(7))] = n;
+  else CFG[id.slice(4)] = n;
+  toast("Saved. The apps use the new figure straight away.");
+  render();
+});
+
+/* ---------- guide ---------- */
+function guide() {
+  const b = state.booking;
+  const g = (n, text, go, label) => `<div class="guide"><span class="step">Step ${n} of 6</span><span><b>${text}</b></span>${go ? `<button class="btn ghost small" data-act="gofloat">${label}</button>` : ""}</div>`;
+  if (!b) return g(1, "In the customer phone, choose a worker (nearest first) and send a request. Tap the plan badge to try Membership.");
+  if (b.status === "declined") return g(2, "The worker declined. Choose another worker in the customer phone.");
+  if (b.status === "awaiting") return g(2, "In the worker phone, accept or decline. A worker needs enough job credit to cover the job's value.");
+  if (b.status === "enroute") return g(3, "The worker is on the way. The customer follows the distance and arrival time live.");
+  if (b.status === "arrived") return g(4, "The worker has arrived. In the worker phone, tap Check in. The app checks the worker is at the client's address.");
+  if (b.status === "inprogress") return g(5, "Visit in progress. In the worker phone, tap Check out. That counts the job and uses its value from the worker's job credit. Or try the auto-complete button.");
+  return g(6, "Job counted. The customer pays the worker directly. Open the job credit ledger and transactions in Admin, and try Settings.", "float", "Open credit ledger");
+}
+
+/* ---------- customer phone ---------- */
+function stars(rating, interactive) {
+  return `<div class="stars" role="group" aria-label="Rating">${[1, 2, 3, 4, 5].map((n) => `<button ${interactive ? `data-act="star" data-v="${n}"` : "disabled"} aria-pressed="${n <= rating}" aria-label="${n} stars">★</button>`).join("")}</div>`;
+}
+function mapView(t, name) {
+  const eta = Math.max(1, Math.ceil(t.d / 0.4));
+  return `<div class="map"><svg viewBox="0 0 300 170" role="img" aria-label="Map showing ${esc(name)} approaching">
+    <g stroke="var(--line)" stroke-width="1"><path d="M0 40H300M0 90H300M0 135H300M50 0V170M120 0V170M200 0V170M260 0V170"/></g>
+    <path class="route" d="M24 142 C 80 142, 90 82, 150 82 S 235 52, 268 40" fill="none" stroke="var(--brand)" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round"/>
+    <circle cx="268" cy="40" r="9" fill="var(--red)"/><circle cx="268" cy="40" r="3.5" fill="#fff"/>
+    <circle class="wdot" cx="24" cy="142" r="9" fill="var(--brand)" stroke="#fff" stroke-width="2.5" data-p="${(1 - t.d / t.d0).toFixed(3)}"/>
+  </svg></div>
+  <div class="row"><div><div class="lbl">Distance</div><b>${t.d.toFixed(1)} km</b></div><div><div class="lbl">Arrives in</div><b>${t.d === 0 ? "Arrived" : eta + " min"}</b></div></div>
+  <p class="small muted">Demo speed. Tracking is shown only for this booking.</p>`;
+}
+function customerPhone() {
+  const c = state.cust, b = state.booking;
+  let title = "Find help", sub = "Kabulonga, Lusaka", body = "", back = false;
+  if (c.screen === "home" || (c.screen === "status" && !b)) {
+    const avail = WORKERS.filter((w) => w.services.includes(state.service) && isAvailable(w)).sort((x, y) => x.km - y.km);
+    const shown = avail.slice(0, LIMIT[state.member]);
+    body = `<div class="chips" role="group" aria-label="Service">${Object.keys(RATE).map((s) => `<button class="chip" data-act="svc" data-v="${s}" aria-pressed="${state.service === s}">${LABEL[s]}</button>`).join("")}</div>
+      <p class="small muted">Available now for ${LABEL[state.service].toLowerCase()}, nearest first.</p>
+      ${shown.map((w) => `<div class="card"><div class="wk"><div class="av">${initials(w.name)}</div><div style="min-width:0"><div class="nm">${w.name}</div>
+        <div class="small muted">★ ${w.rating} · ${w.jobs} jobs · ${w.area}</div></div></div>
+        <div class="row"><div><span class="pill ok">✓ Verified</span> <span class="small"><b>${w.km.toFixed(1)} km</b> away</span></div></div>
+        <button class="btn" data-act="pick" data-v="${w.id}">Book ${w.name.split(" ")[0]}</button></div>`).join("")}
+      ${avail.length === 0 ? `<p class="muted">No one is available for this service right now.</p>` : ""}
+      ${shown.length < avail.length ? `<div class="note">Showing the nearest ${shown.length} of ${avail.length} available. Members see more workers.</div><button class="btn ghost" data-act="memscr">See membership plans</button>` : ""}
+      <div class="card"><b>Looking for a full-time worker?</b><p class="small muted">Nannies, housekeepers, cooks and cleaners placed full time. HomeTrust shortlists verified workers for you.</p>
+        <button class="btn ghost" data-act="ft">${state.placement ? "See your full-time request" : "Request a full-time worker"}</button></div>`;
+  } else if (c.screen === "book") {
+    const w = worker(c.wid), rate = RATE[state.service], m = money(rate, c.hours), care = CARE.includes(state.service);
+    title = "Book " + w.name.split(" ")[0]; sub = LABEL[state.service] + " · " + w.km.toFixed(1) + " km away"; back = true;
+    body = `<div><span class="lbl">When</span><div class="chips">${Object.entries(WHEN).map(([k, l]) => `<button class="chip" data-act="when" data-v="${k}" aria-pressed="${c.when === k}">${l}</button>`).join("")}</div></div>
+      <div><span class="lbl">How long (minimum ${CFG.minHours} hours)</span><div class="chips">${hoursOpts().map((h) => `<button class="chip" data-act="hours" data-v="${h}" aria-pressed="${c.hours === h}">${h} hours</button>`).join("")}</div></div>
+      <div><label class="lbl" for="addr">Address</label><input type="text" id="addr" value="${esc(c.address)}"></div>
+      <div><label class="lbl" for="notes">Instructions for the worker</label><textarea id="notes" placeholder="Anything the worker should know">${esc(c.notes)}</textarea></div>
+      ${care ? `<div class="card"><button class="chip" data-act="special" aria-pressed="${c.special}">${c.special ? "✓ " : ""}Someone with special needs</button>
+        ${c.special ? `<label class="lbl" for="sptext">What is needed</label><textarea id="sptext" placeholder="For example: needs help with medication at noon">${esc(c.specialText)}</textarea>` : `<p class="small muted">Tick this so the worker knows before accepting.</p>`}</div>` : ""}
+      <div class="card"><div class="kv total"><span>Final charge for ${c.hours} hours</span><span>${K(m.price)}</span></div></div>
+      <div class="note">You pay the worker this amount directly, in cash or mobile money. HomeTrust adds no fee and does not take payment.</div>
+      <button class="btn" data-act="send">Send request</button>`;
+  } else if (c.screen === "fulltime") {
+    title = "Full-time worker"; sub = "HomeTrust shortlists verified workers"; back = true;
+    const f = c.ft;
+    const ch = (a, opts, cur) => `<div class="chips">${opts.map((o) => `<button class="chip" data-act="${a}" data-v="${o}" aria-pressed="${cur === o}">${LABEL[o] || o}</button>`).join("")}</div>`;
+    body = `<div><span class="lbl">Role</span>${ch("ftrole", Object.keys(RATE), f.role)}</div>
+      <div><span class="lbl">Arrangement</span>${ch("ftarr", ["Live-out", "Live-in"], f.arr)}</div>
+      <div><span class="lbl">Start</span>${ch("ftstart", ["Within 2 weeks", "Next month"], f.start)}</div>
+      <div><label class="lbl" for="ftnotes">What you need</label><textarea id="ftnotes" placeholder="Duties, children's ages, working days">${esc(f.notes)}</textarea></div>
+      <div class="note">${state.ftFee ? "HomeTrust acts as your agent. A one-off placement fee of " + K(CFG.placementFee) + " applies when you confirm a hire. It is non-refundable." : "No placement fee is charged right now."} The salary is agreed and paid directly between you and the worker.</div>
+      <button class="btn" data-act="ftsend">Send request</button>`;
+  } else if (c.screen === "ftstatus" && state.placement) {
+    const p = state.placement; title = "Full-time " + LABEL[p.role].toLowerCase(); sub = p.arrangement + " · " + p.start; back = true;
+    if (p.status === "requested") body = `<div class="card"><p><b>Request received</b></p><p class="small muted">HomeTrust is choosing verified workers for you. This usually takes a few working days.</p><div class="dots" aria-hidden="true"><span></span><span></span><span></span></div></div>
+      <button class="btn ghost" data-act="ftshort">Show sample shortlist (demo)</button>`;
+    else if (p.status === "shortlist") {
+      const list = WORKERS.filter((w) => w.services.includes(p.role) && !busyIds().has(w.id)).sort((x, y) => y.rating - x.rating).slice(0, 3);
+      body = `<p class="small muted">HomeTrust shortlisted these verified workers for you.</p>${list.map((w) => `<div class="card"><div class="wk"><div class="av">${initials(w.name)}</div><div style="min-width:0"><div class="nm">${w.name}</div><div class="small muted">★ ${w.rating} · ${w.jobs} jobs · ${w.area}</div></div></div>
+        <div><span class="pill ok">✓ Verified</span></div><button class="btn" data-act="ftpick" data-v="${w.id}">Offer the job to ${w.name.split(" ")[0]}</button></div>`).join("")}`;
+    } else if (p.status === "offered") {
+      body = `<div class="card"><p><b>Waiting for ${worker(p.picked).name.split(" ")[0]} to accept</b></p><p class="small muted">You pay the fee only after the worker accepts.</p><div class="dots" aria-hidden="true"><span></span><span></span><span></span></div></div>
+        <p class="small muted">Demo: accept or decline in the worker phone.</p>`;
+    } else if (p.status === "accepted") {
+      body = `<div class="note ok">${worker(p.picked).name} accepted the job.</div><button class="btn" data-act="ftreview">Review and confirm the hire</button>`;
+    } else {
+      const w = worker(p.picked);
+      body = `<div class="note ok">Hire confirmed.</div><div class="card"><div class="wk"><div class="av">${initials(w.name)}</div><div><div class="nm">${w.name}</div><div class="small muted">${LABEL[p.role]} · ${p.arrangement}</div></div></div><div class="kv"><span>Phone</span><span>${WPHONE[w.id]}</span></div></div>
+        <p class="small muted">${p.feePaid ? "Placement fee " + K(CFG.placementFee) + " paid. " : ""}Agree the salary and start date directly with ${w.name.split(" ")[0]}.</p><button class="btn ghost" data-act="ftagain">Done</button>`;
+    }
+  } else if (c.screen === "fthire" && state.placement) {
+    const p = state.placement, w = worker(p.picked); title = "Confirm hire"; sub = w.name; back = true;
+    body = `<div class="card"><div class="wk"><div class="av">${initials(w.name)}</div><div><div class="nm">${w.name}</div><div class="small muted">${LABEL[p.role]} · ${p.arrangement} · ${p.start.toLowerCase()}</div></div></div></div>
+      ${state.ftFee ? `<div class="card"><div class="kv total"><span>Placement fee</span><span>${K(CFG.placementFee)}</span></div>
+        <div class="note red">Non-refundable. The placement fee is paid once, is non-refundable, and covers HomeTrust finding and verifying your worker.</div>
+        <button class="chip" data-act="ftagree" aria-pressed="${c.agree}">${c.agree ? "✓ " : ""}I understand the fee is non-refundable</button>
+        <p class="small muted">The worker has already accepted. The salary goes directly to the worker, and the worker pays HomeTrust nothing.</p></div><div class="note">Simulated payment. No money moves in this prototype.</div>` : `<div class="note">No placement fee is charged right now.</div>`}
+      <button class="btn" data-act="ftconfirm" ${state.ftFee && !c.agree ? "disabled" : ""}>${state.ftFee ? "Confirm hire and pay " + K(CFG.placementFee) : "Confirm hire"}</button>`;
+  } else if (c.screen === "member") {
+    title = "Membership"; sub = "Optional. Refunds within " + CFG.refundDays + " days."; back = true;
+    const plan = (k) => { const p = PLANS[k], on = state.member === k;
+      return `<div class="plan ${on ? "on" : ""}"><div class="row"><b>${p.name}</b>${on ? `<span class="pill ok">Your plan</span>` : ""}</div>
+        <div class="pr">${p.price ? "K" + p.price : "Free"}<span class="small muted">${p.price ? " / month" : ""}</span></div>
+        <ul>${p.perks.map((x) => `<li>${x}</li>`).join("")}</ul>
+        ${on ? (k === "basic" ? "" : `<button class="btn ghost" data-act="join" data-v="basic">Cancel and refund</button>`) : `<button class="btn ${k === "basic" ? "ghost" : ""}" data-act="join" data-v="${k}">${k === "basic" ? "Switch to Basic" : "Join " + p.name + " for K" + p.price}</button>`}</div>`; };
+    body = `<p class="small muted">Membership is optional. A member sees more workers to choose from, still nearest first. You pay the worker for every job. You can cancel and get a refund within ${CFG.refundDays} days of joining.</p>${plan("basic")}${plan("plus")}${plan("premium")}
+      <div class="note">Simulated payment. No money moves in this prototype.</div>`;
+  } else if (b) {
+    const w = worker(b.wid), first = w.name.split(" ")[0]; title = w.name; sub = LABEL[b.service] + " · " + b.hours + " h · " + WHEN[b.when];
+    const cmp = b.complaint ? `<div class="note red">Complaint raised. HomeTrust will look into it and contact you.</div>` : "";
+    if (b.status === "awaiting") body = `<div class="card"><p><b>Waiting for ${first} to accept</b></p><div class="dots" aria-hidden="true"><span></span><span></span><span></span></div></div>
+      <div class="note">You pay ${first} ${K(b.price)} directly when the visit ends. HomeTrust does not take payment.</div><button class="btn ghost" data-act="cancel">Cancel request</button>`;
+    else if (b.status === "declined") body = `<div class="note red">${w.name} cannot take this job.</div><button class="btn" data-act="again">Choose another worker</button>`;
+    else if (b.status === "enroute" || b.status === "arrived") body = `${mapView(state.track, w.name)}${b.status === "arrived" ? `<div class="note ok">${first} has arrived at your address.</div>` : ""}`;
+    else if (b.status === "inprogress") body = `${cmp}<div class="card"><p><b>Visit in progress</b></p><p class="small muted">${first} checked in. Location is shared only for this booking.</p></div>
+      <button class="btn danger" data-act="sos">SOS: I need help</button><button class="btn ghost" data-act="problem">Report a problem</button>`;
+    else body = `<div class="note ok">Visit finished.</div><div class="card"><div class="kv total"><span>Pay ${first} directly</span><span>${K(b.price)}</span></div><p class="small muted">In cash or mobile money. HomeTrust does not take payment.</p></div>
+      <div class="card"><p class="small muted">Rate the visit</p>${stars(b.rating, true)}</div>${cmp}<button class="btn" data-act="again">Done</button>`;
+  }
+  return `<div class="phone-col"><div class="phone"><div class="sbar"><span>14:00</span><span>Customer</span></div>
+    <div class="appbar">${back ? `<button class="back" data-act="back" aria-label="Back">‹</button>` : ""}<div><h3>${esc(title)}</h3><div class="sub">${esc(sub)}</div></div>
+    <button class="pill mem ${state.member === "basic" ? "" : "ok"}" data-act="memscr" aria-label="Membership">${state.member === "basic" ? "Basic" : "★ " + PLANS[state.member].name}</button></div>
+    <div class="scr">${body}</div></div><div class="phone-label">Customer app</div></div>`;
+}
+
+/* ---------- worker phone ---------- */
+function workerPhone() {
+  const b = state.booking, pl = state.placement, w = personaW(), flt = state.float[w.id];
+  const mine = state.jobs.filter((j) => j.wid === w.id);
+  let body = "", sub = "You are online", back = false;
+  if (state.wtop.open) {
+    sub = "Buy job credit"; back = true;
+    body = `<div class="card"><div class="kv"><span>Job credit now</span><b>${K(flt)}</b></div><p class="small muted">Job credit is the amount of work you can take. Each completed job uses its value from your credit. Customers pay you directly.</p></div>
+      <div><span class="lbl">Job credit</span><div class="chips">${CFG.packages.map((n) => `<button class="chip" data-act="wamt" data-v="${n}" aria-pressed="${state.wtop.amt === n}">${K0(n)}</button>`).join("")}</div>
+      <p class="small muted" style="margin-top:8px">${K0(state.wtop.amt)} of job credit costs ${K0(topupPrice(state.wtop.amt))}.</p></div>
+      <div class="note">Simulated payment through mobile money. No money moves in this prototype.</div>
+      <button class="btn" data-act="wpay">Pay ${K0(topupPrice(state.wtop.amt))}</button>`;
+  } else if (pl && pl.picked === w.id && pl.status === "offered" && !b) {
+    sub = "Full-time offer";
+    body = `<div class="card"><p><b>Full-time ${LABEL[pl.role].toLowerCase()}</b></p><div class="kv"><span>Employer</span><span>${esc(pl.client)}</span></div><div class="kv"><span>Arrangement</span><span>${pl.arrangement}</span></div><div class="kv"><span>Start</span><span>${pl.start}</span></div>
+      <p class="small muted">No fee to you and no job credit used. You agree the salary directly with the employer.</p></div>
+      <button class="btn" data-act="ftwaccept">Accept the job</button><button class="btn ghost" data-act="ftwdecline">Decline</button>`;
+  } else if (b && b.status === "awaiting") {
+    sub = "New request";
+    const short = flt < b.price;
+    body = `<div class="card"><div class="row"><b>${LABEL[b.service]} · ${b.hours} hours</b><span class="pill amber">${w.km.toFixed(1)} km</span></div>
+      <div class="kv"><span>When</span><span>${WHEN[b.when]}</span></div>
+      <div class="kv"><span>Area</span><span>Kabulonga</span></div>
+      <div class="kv total"><span>Customer pays you</span><span>${K(b.price)}</span></div>
+      <div class="kv"><span>Job credit used when counted</span><span>${K(b.price)}</span></div>
+      <p class="small muted">The customer pays you directly, in cash or mobile money. The exact address is shown after you accept.</p></div>
+      ${b.special ? `<div class="note">Special needs: ${esc(b.specialText || "details not given")}</div>` : ""}
+      ${b.notes ? `<div class="card"><span class="lbl">Instructions</span><p>${esc(b.notes)}</p></div>` : ""}
+      ${short ? `<div class="note red">Your job credit is ${K(flt)}. You need at least ${K(b.price)} to accept this job.</div><button class="btn" data-act="wtop">Buy job credit</button>` : `<button class="btn" data-act="accept">Accept</button>`}
+      <button class="btn ghost" data-act="decline">Decline</button>`;
+  } else if (b && ["enroute", "arrived", "inprogress", "done"].includes(b.status)) {
+    sub = "Active job";
+    const addr = `<div class="card"><span class="lbl">Address</span><p>${esc(b.address)}</p>${b.notes ? `<span class="lbl">Instructions</span><p>${esc(b.notes)}</p>` : ""}${b.special ? `<div class="note">Special needs: ${esc(b.specialText || "details not given")}</div>` : ""}</div>`;
+    if (b.status === "enroute") body = `${addr}${mapView(state.track, "the customer")}<p class="small muted">Head to the address. The customer can see you approaching.</p>`;
+    else if (b.status === "arrived") body = `${addr}<div class="note ok">You are at the address.</div><button class="btn" data-act="checkin">Check in</button><button class="btn ghost small" data-act="checkinfar">Demo: try checking in from far away</button>`;
+    else if (b.status === "inprogress") body = `${addr}${b.complaint ? `<div class="note red">A complaint is open on this job.</div>` : ""}<button class="btn" data-act="checkout">Check out</button><button class="btn danger" data-act="sos">SOS</button><button class="btn ghost small" data-act="autoc">Demo: I forgot to check out</button>`;
+    else body = `<div class="note ok">Job counted.</div><div class="card"><div class="kv"><span>Customer pays you</span><b>${K(b.price)}</b></div><div class="kv"><span>Job credit used</span><span>${K(b.price)}</span></div><div class="kv total"><span>Job credit left</span><span>${K(flt)}</span></div></div>
+      ${flt < CFG.minListed ? `<div class="note red">Your job credit is below ${K0(CFG.minListed)}. Customers cannot see you until you buy more.</div>` : flt < CFG.lowCredit ? `<div class="note">Low job credit. Buy more soon.</div>` : ""}<button class="btn" data-act="wtop">Buy job credit</button>`;
+  } else {
+    const busy = busyIds().has(w.id), paused = flt < CFG.minListed;
+    body = `${pl && pl.status === "hired" && pl.picked === w.id ? `<div class="note ok">You were hired full time by ${esc(pl.client)}. No fee to you and no job credit used.</div>` : ""}
+      <div class="card"><div class="row"><b>${paused ? "Paused" : busy ? "On a job" : "Available"}</b><span class="pill ${paused ? "red" : busy ? "amber" : "ok"}">${paused ? "Buy job credit to be listed" : busy ? "Not listed" : "Customers can see you"}</span></div>
+      <p class="small muted">Free to register. Customers pay you directly. You buy job credit from HomeTrust, and each completed job uses its value from your credit.</p></div>
+      <div class="card"><span class="lbl">Job credit</span><div class="kv total" style="border:0;margin:0;padding:0"><span>Balance</span><b>${K(flt)}</b></div>
+      ${flt < CFG.lowCredit ? `<div class="note ${paused ? "red" : ""}">${paused ? "Too little credit. You cannot accept new jobs." : "Low job credit. Buy more soon."}</div>` : ""}
+      <button class="btn" data-act="wtop">Buy job credit</button></div>
+      ${mine.length ? `<div class="card"><span class="lbl">Jobs counted</span>${mine.map((j) => `<div class="kv"><span>${j.id} · ${LABEL[j.service]}</span><span class="pill ${j.status === "reversed" ? "amber" : "ok"}">${j.status === "reversed" ? "Returned" : "−" + K(j.price)}</span></div>`).join("")}</div>` : `<p class="small muted">No completed jobs yet.</p>`}
+      ${b && b.status === "declined" ? `<div class="note">You declined the last request.</div>` : ""}`;
+  }
+  return `<div class="phone-col"><div class="phone"><div class="sbar"><span>14:00</span><span>Worker</span></div>
+    <div class="appbar">${back ? `<button class="back" data-act="wtopback" aria-label="Back">‹</button>` : `<div class="av" style="width:34px;height:34px;font-size:13px">${initials(w.name)}</div>`}<div><h3>${w.name}</h3><div class="sub">${sub}</div></div></div>
+    <div class="scr">${body}</div></div><div class="phone-label">Worker app</div></div>`;
+}
+
+/* ---------- side panel ---------- */
+function sidePanel() {
+  const b = state.booking;
+  let body = `<p class="small muted">Book a worker to see how money moves. The customer pays the worker. HomeTrust only uses the job's value from the worker's job credit.</p>`;
+  if (b && b.status !== "declined") {
+    const w = worker(b.wid), done = b.status === "done", now = state.float[b.wid], before = done ? r2(now + b.price) : now;
+    body = `<div class="ledger">
+      <div class="kv"><span>Final charge</span><b>${K(b.price)}</b></div>
+      <div class="kv"><span>Paid by the customer to the worker, directly</span><span>${K(b.price)}</span></div>
+      <div class="kv"><span>${w.name.split(" ")[0]}'s job credit before the job</span><span>${K(before)}</span></div>
+      <div class="kv"><span>Job credit used at check-out</span><span>${K(b.price)}</span></div>
+      <div class="kv"><span>${w.name.split(" ")[0]}'s job credit after</span><span>${K(r2(before - b.price))}</span></div>
+      <div class="kv total"><span>Status</span><span class="pill ${done ? "ok" : "amber"}">${done ? "Credit used" : "Used at check-out"}</span></div></div>`;
+  }
+  return `<aside class="side"><div class="panel"><h3>Where the money goes</h3>${body}</div>
+    <div class="panel"><h3>What happened</h3>${state.log.length ? `<ul class="log">${state.log.map((l) => `<li><time>${l.t}</time><span>${esc(l.m)}</span></li>`).join("")}</ul>` : `<p class="small muted">Events appear here as you use the phones.</p>`}</div></aside>`;
+}
+
+/* ---------- admin ---------- */
+const STATUS_TXT = { awaiting: "Awaiting worker", enroute: "On the way", arrived: "Arrived", inprogress: "In progress", done: "Completed", declined: "Declined" };
+const STATUS_CLS = { awaiting: "amber", enroute: "", arrived: "ok", inprogress: "ok" };
+const SIGN = { "Credit top-up": 1, Membership: 1, "Placement fee": 1, "Credit used": 0, Reversal: 0, "Membership refund": -1 };
+const TX_TYPES = ["Credit top-up", "Credit used", "Placement fee", "Membership", "Membership refund", "Reversal"];
+const TXH = ["Time", "Reference", "Type", "Party", "Amount", "Status"];
+const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+const tbl = (head, rows, empty) => rows.length ? `<div class="tbl"><table><thead><tr>${head.map((h) => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>` : `<p class="muted">${empty || "Nothing here yet."}</p>`;
+const who = (name, sub) => `<b>${esc(name)}</b><div class="small muted">${esc(sub)}</div>`;
+const sumBy = (a, f) => a.reduce((s, x) => s + f(x), 0);
+const floatStatus = (w) => busyIds().has(w.id) ? ["amber", "On a job"] : state.float[w.id] < CFG.minListed ? ["red", "Paused: low credit"] : state.float[w.id] < CFG.lowCredit ? ["amber", "Low credit"] : ["ok", "Available"];
+
+function liveJob() {
+  const b = state.booking; if (!b || b.status === "declined" || b.status === "done") return null;
+  const w = worker(b.wid), c = AREAS[DEMO_CLIENT.area], ws = AREAS[w.area];
+  const p = b.status === "awaiting" ? 0 : b.status === "enroute" && state.track ? 1 - state.track.d / state.track.d0 : 1;
+  const note = { awaiting: "Waiting for the worker", enroute: state.track ? state.track.d.toFixed(1) + " km away" : "", arrived: "At the address", inprogress: "Checked in" }[b.status];
+  return { id: "B-2051", wid: b.wid, client: DEMO_CLIENT.name, cphone: DEMO_CLIENT.phone, service: b.service, status: b.status, area: DEMO_CLIENT.area, note, hours: b.hours, price: b.price, c, w: lerp(ws, c, p) };
+}
+const activeJobs = () => [liveJob(), ...state.active].filter(Boolean);
+const customers = () => [{ ...DEMO_CLIENT, tier: state.member, jobs: state.booking ? 1 : 0 }, ...CUSTOMERS];
+function ledger() {
+  const sumT = (types) => state.tx.filter((x) => types.includes(x.type)).reduce((s, x) => s + x.amt, 0);
+  const used = r2(sumT(["Credit used"]) - sumT(["Reversal"])), pct = CFG.creditPct / 100;
+  const membership = r2(sumT(["Membership"]) - sumT(["Membership refund"]));
+  const earned = r2(used * pct);
+  return { outstanding: r2(sumBy(Object.values(state.float), (v) => v)), topups: r2(sumT(["Credit top-up"])), used, earned, placement: r2(sumT(["Placement fee"])), membership, income: r2(earned + sumT(["Placement fee"]) + membership) };
+}
+function txRow(x) {
+  const sg = SIGN[x.type];
+  const cls = sg > 0 ? "amt-in" : sg < 0 ? "amt-out" : "muted";
+  const pc = x.type === "Membership refund" ? "red" : x.type === "Credit top-up" ? "ok" : x.type === "Placement fee" ? "amber" : x.type === "Reversal" ? "amber" : "";
+  return `<tr><td>${x.t}</td><td>${esc(x.ref)}</td><td><span class="pill ${pc}">${x.type}</span></td><td>${esc(x.party)}</td><td class="${cls}">${sg < 0 ? "−" : sg > 0 ? "+" : ""}${K(x.amt)}</td><td>${x.status}</td></tr>`;
+}
+function adminNav(counts) {
+  const items = [["overview", "Overview"], ["live", "Live jobs"], ["bookings", "Bookings"], ["float", "Job credit ledger"], ["transactions", "Transactions"], ["workers", "Workers"], ["customers", "Customers"], ["complaints", "Complaints and SOS"], ["placements", "Full-time placements"], ["members", "Memberships"], ["settings", "Settings"]];
+  return `<nav class="snav" aria-label="Admin sections">${items.map(([k, l]) => `<button data-act="adm" data-v="${k}" aria-current="${state.admin === k}"><span>${l}</span>${counts[k] ? `<span class="badge ${k === "complaints" || k === "float" ? "" : "n"}">${counts[k]}</span>` : ""}</button>`).join("")}</nav>`;
+}
+function adminView() {
+  const act2 = activeJobs(), openC = state.complaints.filter((c) => c.status === "open"), paused = WORKERS.filter((w) => state.float[w.id] < CFG.minListed);
+  const counts = { live: act2.length, float: paused.length, workers: state.photoPending ? 1 : 0, complaints: openC.length, placements: placementsAll().filter((p) => p.status !== "hired").length };
+  const ctx = { M: ledger(), act2, openC, paused };
+  const sections = { overview: secOverview, live: secLive, bookings: secBookings, float: secFloat, transactions: secTx, workers: secWorkers, customers: secCustomers, complaints: secComplaints, placements: secPlacements, members: secMembers, settings: secSettings };
+  return `${guide()}<div class="adm">${adminNav(counts)}<div class="adm-main">${sections[state.admin](ctx)}</div></div>`;
+}
+function liveRow(j) {
+  const w = worker(j.wid);
+  return `<tr><td><b>${j.id}</b></td><td>${LABEL[j.service]}</td><td>${who(j.client, j.cphone)}</td><td>${who(w.name, WPHONE[w.id])}</td><td><span class="pill ${STATUS_CLS[j.status] || ""}">${STATUS_TXT[j.status]}</span></td><td>${who(j.area, j.note)}</td></tr>`;
+}
+const LIVE_HEAD = ["Job", "Service", "Client", "Worker", "Status", "Where"];
+
+function secOverview({ M, act2, openC, paused }) {
+  const att = [];
+  if (openC.length) att.push(`<li><span class="pill red">${openC.length} open</span> complaints or SOS <button class="btn ghost small" data-act="adm" data-v="complaints">Review</button></li>`);
+  if (paused.length) att.push(`<li><span class="pill amber">${paused.length}</span> ${paused.length === 1 ? "worker is" : "workers are"} paused with low job credit <button class="btn ghost small" data-act="adm" data-v="float">Open credit ledger</button></li>`);
+  if (state.photoPending) att.push(`<li><span class="pill amber">1 photo</span> change waiting for approval <button class="btn ghost small" data-act="adm" data-v="workers">Review</button></li>`);
+  return `<div class="tiles">
+      <div class="tile"><div class="v">${K(M.outstanding)}</div><div class="l">Job credit outstanding with workers</div></div>
+      <div class="tile"><div class="v">${K(M.topups)}</div><div class="l">Received from credit top-ups</div></div>
+      <div class="tile"><div class="v">${K(M.earned)}</div><div class="l">Earned from credit used (${CFG.creditPct}%)</div></div>
+      <div class="tile"><div class="v">${K(M.placement + M.membership)}</div><div class="l">Placement and membership fees</div></div></div>
+    <div class="two"><div class="panel"><h3>Needs attention</h3>${att.length ? `<ul class="att">${att.join("")}</ul>` : `<p class="muted">Nothing needs attention.</p>`}</div>
+      <div class="panel"><h3>Live now (${act2.length})</h3>${tbl(["Job", "Client", "Worker", "Status"], act2.slice(0, 4).map((j) => `<tr><td><b>${j.id}</b></td><td>${esc(j.client)}</td><td>${worker(j.wid).name}</td><td><span class="pill ${STATUS_CLS[j.status] || ""}">${STATUS_TXT[j.status]}</span></td></tr>`), "No jobs right now.")}
+        <p style="margin-top:10px"><button class="btn ghost small" data-act="adm" data-v="live">Open live map</button></p></div></div>
+    <div class="panel" style="margin-top:16px"><h3>Latest transactions</h3>${tbl(TXH, state.tx.slice(0, 6).map(txRow))}
+      <p style="margin-top:10px"><button class="btn ghost small" data-act="adm" data-v="transactions">All transactions</button></p></div>`;
+}
+
+function secLive({ act2 }) {
+  const roads = `<g stroke="var(--line)" stroke-width="1.2"><path d="M0 60H640M0 130H640M0 200H640M0 265H640M110 0V300M240 0V300M360 0V300M470 0V300M570 0V300"/></g>`;
+  const areas = Object.entries(AREAS).map(([n, [x, y]]) => `<text x="${x - 4}" y="${y + 30}" font-size="11" fill="var(--muted)">${n}</text>`).join("");
+  const pins = act2.map((j) => {
+    const [cx, cy] = j.c, [wx, wy] = j.w, near = Math.hypot(cx - wx, cy - wy) < 4;
+    return `<g>${near ? "" : `<line x1="${wx}" y1="${wy}" x2="${cx}" y2="${cy}" stroke="var(--brand)" stroke-width="2" stroke-dasharray="5 4"/>`}<circle cx="${cx}" cy="${cy}" r="9" fill="var(--red)"/><circle cx="${wx}" cy="${wy}" r="7" fill="var(--brand)" stroke="#fff" stroke-width="2"/><text x="${cx + 13}" y="${cy - 10}" font-size="12" font-weight="700" fill="var(--fg)">${j.id}</text></g>`;
+  }).join("");
+  return `<div class="panel"><h3>Live jobs (${act2.length})</h3>
+    <div class="bigmap"><svg viewBox="0 0 640 300" role="img" aria-label="Map of Lusaka showing active jobs, with the client location and the worker's position">${roads}${areas}${pins}</svg>
+      <div class="legend"><span>● <span style="color:var(--red)">Client address</span></span><span>● <span style="color:var(--brand)">Worker position</span></span><span>Sample map, not to scale</span></div></div></div>
+    <div class="panel" style="margin-top:16px"><h3>Who is where</h3>${tbl(LIVE_HEAD, act2.map(liveRow), "No jobs right now.")}</div>`;
+}
+
+function secBookings({ act2 }) {
+  const done = state.jobs.map((j) => {
+    const st = j.status === "reversed" ? ["amber", "Completed · credit returned"] : ["ok", "Completed · counted"];
+    return `<tr><td><b>${j.id}</b></td><td>${esc(j.client)}</td><td>${j.worker}</td><td>${LABEL[j.service]}</td><td>${j.hours} h</td><td>${K(j.price)}</td><td>${j.status === "reversed" ? "—" : K(j.price)}</td><td><span class="pill ${st[0]}">${st[1]}</span></td></tr>`;
+  });
+  const live = act2.map((j) => `<tr><td><b>${j.id}</b></td><td>${esc(j.client)}</td><td>${worker(j.wid).name}</td><td>${LABEL[j.service]}</td><td>${j.hours} h</td><td>${K(j.price)}</td><td>—</td><td><span class="pill ${STATUS_CLS[j.status] || ""}">${STATUS_TXT[j.status]}</span></td></tr>`);
+  const declined = `<tr><td><b>B-2039</b></td><td>Peter Sakala</td><td>Bwalya Tembo</td><td>Housekeeper</td><td>3 h</td><td>${K(135)}</td><td>—</td><td><span class="pill red">Declined</span></td></tr>`;
+  return `<div class="panel"><h3>All bookings</h3><p class="small muted" style="margin-bottom:10px">The final charge is paid by the customer to the worker. The same value is used from the worker's job credit when the job is counted at check-out.</p>${tbl(["Job", "Client", "Worker", "Service", "Length", "Final charge", "Credit used", "Status"], [...live, ...done, declined])}</div>`;
+}
+
+function secFloat({ M, paused }) {
+  const rows = [...WORKERS].sort((a, b) => state.float[a.id] - state.float[b.id]).map((w) => {
+    const st = floatStatus(w), n = state.jobs.filter((j) => j.wid === w.id).length;
+    return `<tr><td>${who(w.name, WPHONE[w.id])}</td><td><b>${K(state.float[w.id])}</b></td><td><span class="pill ${st[0]}">${st[1]}</span></td><td>${n}</td></tr>`;
+  });
+  return `<div class="tiles"><div class="tile"><div class="v">${K(M.outstanding)}</div><div class="l">Job credit outstanding</div></div><div class="tile"><div class="v">${K(M.topups)}</div><div class="l">Received from top-ups</div></div><div class="tile"><div class="v">${K(M.used)}</div><div class="l">Job credit used</div></div><div class="tile"><div class="v">${paused.length}</div><div class="l">Workers paused (low credit)</div></div></div>
+    <div class="panel"><h3>Worker job credit</h3><p class="small muted" style="margin-bottom:10px">A worker buys job credit, for example ${K0(CFG.packages[1])} of jobs for ${K0(topupPrice(CFG.packages[1]))}. Each counted job uses its value from the credit. A worker below ${K0(CFG.minListed)} cannot accept jobs and is hidden from customers. Staff can return credit, because it is HomeTrust's own record. All figures are set under Settings.</p>
+      ${tbl(["Worker", "Job credit", "Status", "Jobs counted"], rows)}</div>`;
+}
+
+function secTx() {
+  const f = state.txf, rows = state.tx.filter((x) => f === "all" || x.type === f);
+  const chips = ["all", ...TX_TYPES].map((t) => `<button class="chip" data-act="txf" data-v="${t}" aria-pressed="${f === t}">${t === "all" ? "All" : t}</button>`).join("");
+  return `<div class="panel"><h3>Transaction history</h3><p class="small muted" style="margin-bottom:10px">HomeTrust's own money only: credit top-ups, placement fees, memberships and refunds. "Credit used" and "Reversal" rows record job credit and are not cash. Job payments go straight from customer to worker and never appear here.</p>
+    <div class="chips" style="margin-bottom:12px" role="group" aria-label="Filter by type">${chips}</div>${tbl(TXH, rows.map(txRow), "No transactions of this type yet.")}
+    <p class="small muted" style="margin-top:10px">${rows.length} ${rows.length === 1 ? "entry" : "entries"}</p></div>`;
+}
+
+function secWorkers() {
+  const rows = WORKERS.map((w, i) => { const st = floatStatus(w); return `<tr><td>${who(w.name, WPHONE[w.id])}</td><td>${w.services.map((s) => LABEL[s]).join(", ")}</td><td>${w.area}</td><td>★ ${w.rating} · ${w.jobs} jobs</td>
+    <td><div class="checks">${CHECKS.map((c) => `<span class="pill ok" title="${c}">✓</span>`).join("")}</div></td>
+    <td>${i === 3 ? (state.photoPending ? `<span class="pill amber">New photo waiting</span> <button class="btn small" data-act="photo" data-v="ok">Approve</button> <button class="btn ghost small" data-act="photo" data-v="no">Reject</button>` : `<span class="pill ${state.photoDone === "ok" ? "ok" : "red"}">${state.photoDone === "ok" ? "Approved" : "Rejected"}</span>`) : `<span class="pill ok">Approved</span>`}</td>
+    <td>${K(state.float[w.id])}</td><td><span class="pill ${st[0]}">${st[1]}</span></td></tr>`; });
+  return `<div class="panel"><h3>Workers</h3><p class="small muted" style="margin-bottom:10px">A worker is listed to customers only when all six checks are cleared and their job credit is above the minimum: ${CHECKS.join(", ")}. A changed profile photo needs approval first.</p>
+    ${tbl(["Worker", "Services", "Area", "Rating", "Six checks", "Profile photo", "Job credit", "Now"], rows)}</div>`;
+}
+
+function secCustomers() {
+  const rows = customers().map((c) => `<tr><td>${who(c.name, c.phone)}</td><td>${c.area}</td><td><span class="pill ${c.tier === "basic" ? "" : "ok"}">${c.tier === "basic" ? "Basic" : "★ " + PLANS[c.tier].name}</span></td><td>${LIMIT[c.tier] === Infinity ? "All" : "Nearest " + LIMIT[c.tier]}</td><td>${c.jobs}</td></tr>`);
+  return `<div class="panel"><h3>Customers</h3>${tbl(["Customer", "Area", "Plan", "Workers shown", "Bookings"], rows)}</div>`;
+}
+
+function secComplaints({ openC }) {
+  const rows = state.complaints.map((c) => {
+    const job = state.jobs.find((j) => j.id === c.job);
+    return `<tr><td><b>${c.id}</b></td><td><span class="pill ${c.type === "SOS" ? "red" : "amber"}">${c.type}</span></td><td>${c.job}</td><td>${esc(c.client)}</td><td>${esc(c.worker)}</td><td>${esc(c.text)}</td>
+    <td>${c.status === "open" ? `<span class="pill red">Open</span>` : `<span class="pill ok">Resolved</span>`}</td>
+    <td>${c.status === "open" ? `<button class="btn small" data-act="resolve" data-v="${c.job}">Resolve</button> ` : ""}${job && job.status === "counted" ? `<button class="btn ghost small" data-act="reverse" data-v="${c.job}">Return ${K(job.price)} credit</button>` : job && job.status === "reversed" ? `<span class="small muted">Credit returned</span>` : ""}</td></tr>`; });
+  return `<div class="panel"><h3>Complaints and SOS (${openC.length} open)</h3><p class="small muted" style="margin-bottom:10px">HomeTrust records the complaint, mediates, and can warn or suspend the worker. It cannot refund a job payment, because the customer paid the worker directly. Job credit used for a job can be returned, because it is HomeTrust's own record.</p>
+    ${tbl(["ID", "Type", "Job", "Client", "Worker", "Details", "Status", "Action"], rows, "No complaints.")}</div>`;
+}
+
+const placementsAll = () => [state.placement, ...state.placements].filter(Boolean);
+function secPlacements() {
+  const all = placementsAll(), fees = sumBy(state.tx.filter((x) => x.type === "Placement fee"), (x) => x.amt);
+  const label = (p) => ({ hired: ["ok", "Hired"], accepted: ["amber", "Worker accepted"], offered: ["amber", "Offered to worker"], shortlist: ["amber", "Shortlist sent"], requested: ["amber", "New request"] }[p.status]);
+  const rows = all.map((p) => `<tr><td><b>${p.id}</b></td><td>${esc(p.client)}</td><td>${LABEL[p.role]} · ${p.arrangement}</td><td>${p.start}</td><td>${p.picked ? who(worker(p.picked).name, WPHONE[p.picked]) : "Not chosen yet"}</td>
+    <td><span class="pill ${label(p)[0]}">${label(p)[1]}</span></td>
+    <td>${p.status === "requested" ? `<button class="btn small" data-act="ftshort" data-v="${p.id}">Send shortlist</button>` : p.status === "hired" ? (p.feePaid ? K(CFG.placementFee) + " received" : "No fee charged") : ""}</td></tr>`);
+  return `<div class="tiles"><div class="tile"><div class="v">${all.length}</div><div class="l">Placement requests</div></div><div class="tile"><div class="v">${all.filter((p) => p.status === "hired").length}</div><div class="l">Hires confirmed</div></div><div class="tile"><div class="v">${K(fees)}</div><div class="l">Placement fees received</div></div></div>
+    <div class="panel"><div class="row" style="align-items:flex-start"><div><h3>Placement fee</h3><p class="small muted">${K(CFG.placementFee)} paid once by the employer, non-refundable, after the worker accepts and the employer confirms. Workers are never charged and no job credit is used for full-time workers. Switch collection off until the legal check on the placement model is done. The amount is set under Settings.</p></div>
+      <button class="btn small ${state.ftFee ? "" : "ghost"}" data-act="ftfee" aria-pressed="${state.ftFee}">${state.ftFee ? "Collection: On" : "Collection: Off"}</button></div></div>
+    <div class="panel" style="margin-top:16px"><h3>Full-time placement requests</h3>${tbl(["ID", "Employer", "Role", "Start", "Worker", "Status", ""], rows)}</div>`;
+}
+
+function secMembers() {
+  const cs = customers(), mem = cs.filter((c) => c.tier !== "basic");
+  const count = (t) => cs.filter((c) => c.tier === t).length;
+  const mrr = sumBy(mem, (c) => PLANS[c.tier].price);
+  const rows = mem.map((c) => `<tr><td>${who(c.name, c.phone)}</td><td><span class="pill ok">★ ${PLANS[c.tier].name}</span></td><td>${K(PLANS[c.tier].price)}</td></tr>`);
+  return `<div class="tiles"><div class="tile"><div class="v">${mem.length}</div><div class="l">Paying members</div></div><div class="tile"><div class="v">${K(mrr)}</div><div class="l">Membership revenue per month</div></div><div class="tile"><div class="v">${cs.length - mem.length}</div><div class="l">Basic (free) accounts</div></div></div>
+    <div class="plans">${Object.entries(PLANS).map(([k, p]) => `<div class="plan"><div class="row"><b>${p.name}</b><span class="pill ok">Active</span></div><div class="pr">${p.price ? "K" + p.price : "Free"}<span class="small muted">${p.price ? " / month" : ""}</span></div><ul>${p.perks.map((x) => `<li>${x}</li>`).join("")}</ul><div class="small muted">${count(k)} ${count(k) === 1 ? "customer" : "customers"}</div></div>`).join("")}</div>
+    <div class="panel" style="margin-top:16px"><h3>Members</h3>${tbl(["Customer", "Plan", "Monthly fee"], rows, "No paying members yet.")}</div>
+    <p class="small muted" style="margin-top:10px">Membership is optional. A member sees more workers to choose from, still nearest first. Members can cancel for a refund within ${CFG.refundDays} days. Prices, limits and the refund window are set under Settings.</p>`;
+}
+
+function secSettings() {
+  const f = (id, label, val, hint) => `<div><label class="lbl" for="${id}">${label}</label><input type="number" min="0" step="any" id="${id}" value="${val}">${hint ? `<div class="small muted">${hint}</div>` : ""}</div>`;
+  return `<div class="panel"><h3>Settings</h3><p class="small muted">Every figure below can be changed here, and the apps use the new value straight away. Customers never see hourly rates, only the final charge. Change a value and press Tab or click away to save.</p></div>
+    <div class="panel" style="margin-top:16px"><h3>Hourly rates (staff and workers only)</h3><div class="cfg">${Object.keys(RATE).map((s) => f("cfg-rate-" + s, LABEL[s] + " per hour (K)", RATE[s])).join("")}</div></div>
+    <div class="panel" style="margin-top:16px"><h3>Job credit (float)</h3><div class="cfg">${f("cfg-creditPct", "Price of job credit (%)", CFG.creditPct, CFG.creditPct + "% means " + K0(1000 * CFG.creditPct / 100) + " buys K1,000 of jobs")}${CFG.packages.map((p, i) => f("cfg-pk-" + i, "Package " + (i + 1) + " (K of job credit)", p, "Costs " + K0(topupPrice(p)))).join("")}${f("cfg-minListed", "Minimum credit to be listed (K)", CFG.minListed)}${f("cfg-lowCredit", "Low-credit warning below (K)", CFG.lowCredit)}</div></div>
+    <div class="panel" style="margin-top:16px"><h3>Bookings</h3><div class="cfg">${f("cfg-minHours", "Minimum booking (hours)", CFG.minHours)}${f("cfg-autoMinutes", "Count the job automatically after the booked end time (minutes)", CFG.autoMinutes)}</div></div>
+    <div class="panel" style="margin-top:16px"><h3>Memberships</h3><div class="cfg">${f("cfg-plusPrice", "Plus price per month (K)", CFG.plusPrice)}${f("cfg-premiumPrice", "Premium price per month (K)", CFG.premiumPrice)}${f("cfg-limBasic", "Workers shown to Basic", CFG.limBasic)}${f("cfg-limPlus", "Workers shown to Plus", CFG.limPlus)}${f("cfg-refundDays", "Refund window (days)", CFG.refundDays)}</div></div>
+    <div class="panel" style="margin-top:16px"><h3>Full-time placement</h3><div class="cfg">${f("cfg-placementFee", "Placement fee (K, non-refundable)", CFG.placementFee)}</div><p class="small muted" style="margin-top:8px">Switch collection on or off under Full-time placements.</p></div>`;
+}
+
+/* ---------- website ---------- */
+function websiteView() {
+  return `<section class="hero"><div><h1>Verified help for your home in Lusaka.</h1>
+      <p class="lead">Nannies, babysitters, cleaners, cooks and housekeepers who have passed six checks. See who is available nearest to you, book, and follow them to your door.</p>
+      <div class="cta"><button class="btn" data-act="cta">Get it on Google Play</button><button class="btn ghost" data-act="tab" data-v="apps">Try the prototype</button></div></div>
+    <div class="hero-card" aria-hidden="true"><div class="row"><span>Mwila Chanda · Cleaner</span><b>0.8 km</b></div><div class="row"><span>Memory Sichone · Cleaner</span><b>1.2 km</b></div><div class="row"><span>Beatrice Daka · Cleaner</span><b>2.8 km</b></div><p class="small" style="opacity:.85">Available workers, nearest first.</p></div></section>
+    <section class="sec"><h2>How it works</h2><p class="intro">Three steps, and you can see everything on your phone.</p><div class="grid3">
+      <div class="panel"><h3>1. Choose</h3><p class="muted">Pick a service and see verified, available workers nearest first, with their rating.</p></div>
+      <div class="panel"><h3>2. Book</h3><p class="muted">Set the time and how long, and add instructions. You see one final charge before you send, and the worker accepts.</p></div>
+      <div class="panel"><h3>3. Follow arrival</h3><p class="muted">See the worker's distance and arrival time. You pay the worker directly when the visit ends.</p></div></div></section>
+    <section class="sec"><h2>Six checks before anyone is listed</h2><p class="intro">HomeTrust does every check. Interviews and skills assessments are done through WhatsApp or in person.</p><div class="grid3">
+      ${CHECKS.map((c, i) => `<div class="panel"><h3>${c}</h3><p class="muted">${["A clear photo of the worker and their NRC.", "Previous employers are contacted.", "Certificate checked and renewed every 12 months.", "Certificate checked and renewed every 12 months.", "A practical assessment of the work they will do.", "Conduct, language and expectations."][i]}</p></div>`).join("")}</div></section>
+    <section class="sec"><h2>Work with HomeTrust</h2><p class="intro">Registering is free. Customers pay you directly. You buy job credit from HomeTrust, for example ${K0(CFG.packages[1])} of jobs for ${K0(topupPrice(CFG.packages[1]))}, and each completed job uses its value from your credit.</p><div class="grid3">
+      <div class="panel"><h3>Free to register</h3><p class="muted">No subscription and no charge to apply.</p></div>
+      <div class="panel"><h3>Keep what you earn</h3><p class="muted">The customer pays you the full price. Your job credit only tracks the work you have taken.</p></div>
+      <div class="panel"><h3>Your photo is you</h3><p class="muted">A profile photo must show you. Any change is approved by HomeTrust.</p></div></div></section>
+    <section class="sec"><h2>One clear price</h2><p class="intro">You see one final charge before you send a request. You pay it to the worker directly, and HomeTrust adds no booking fee.</p><div class="grid3">
+      <div class="panel"><h3>Final charge</h3><p class="muted">Shown for the length of booking you choose, before you confirm.</p></div>
+      <div class="panel"><h3>Minimum ${CFG.minHours} hours</h3><p class="muted">Every booking is at least ${CFG.minHours} hours, so the worker's time is worthwhile.</p></div>
+      <div class="panel"><h3>No booking fee</h3><p class="muted">HomeTrust does not take payment for the job or add a fee to it.</p></div></div></section>
+    <section class="sec"><h2>Optional membership</h2><p class="intro">Everyone starts on Basic for free. Members see more available workers to choose from. Membership does not include free labour, and you still pay the worker for each job. Cancel within ${CFG.refundDays} days for a refund.</p><div class="plans">
+      ${Object.values(PLANS).map((p) => `<div class="plan"><b>${p.name}</b><div class="pr">${p.price ? "K" + p.price : "Free"}<span class="small muted">${p.price ? " / month" : ""}</span></div><ul>${p.perks.map((x) => `<li>${x}</li>`).join("")}</ul></div>`).join("")}</div></section>
+    <section class="sec"><h2>Safety built in</h2><div class="grid3">
+      <div class="panel"><h3>Location only for the job</h3><p class="muted">Shared during a booking and checked at arrival.</p></div>
+      <div class="panel"><h3>SOS and complaints</h3><p class="muted">Reach HomeTrust from the app. HomeTrust records and follows up, and can suspend a worker.</p></div>
+      <div class="panel"><h3>Private documents</h3><p class="muted">Only authorised staff see a worker's documents. Your address is shared after acceptance.</p></div></div></section>
+    <section class="sec"><div class="panel" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between"><div><h2 style="margin-bottom:6px">Looking for a full-time worker?</h2><p class="muted">Tell us the role. HomeTrust acts as your agent and shortlists verified workers. You pay a one-off, non-refundable placement fee when you confirm the hire.</p></div><button class="btn" style="width:auto" data-act="cta">Request a placement in the app</button></div></section>
+    <footer class="footer"><p>HomeTrust Zambia. Prototype with sample workers, rates and prices.</p></footer>`;
+}
+
+/* ---------- render ---------- */
+function postRender() {
+  document.querySelectorAll(".map").forEach((m) => {
+    const path = m.querySelector(".route"), dot = m.querySelector(".wdot");
+    if (!path || !dot) return;
+    const p = path.getPointAtLength(path.getTotalLength() * Number(dot.dataset.p));
+    dot.setAttribute("cx", p.x); dot.setAttribute("cy", p.y);
+  });
+}
+function render() {
+  const v = $("#view");
+  const active = document.activeElement && document.activeElement.id;
+  const caret = active && document.activeElement.selectionStart;
+  v.innerHTML = state.tab === "website" ? websiteView() : state.tab === "apps" ? `${guide()}<div class="apps">${customerPhone()}${workerPhone()}${sidePanel()}</div>` : adminView();
+  ["website", "apps", "admin"].forEach((t) => $("#t-" + t).setAttribute("aria-current", String(state.tab === t)));
+  postRender();
+  if (active && ["INPUT", "TEXTAREA"].includes((document.getElementById(active) || {}).tagName) && !timer && !active.startsWith("cfg-")) {
+    const el = document.getElementById(active); if (el) { el.focus(); try { el.setSelectionRange(caret, caret); } catch (e) {} }
+  }
+}
+state = fresh();
+render();
+</script>
+
+</body>
+</html>
